@@ -28,6 +28,7 @@ h6 {
 body {
   font-family: "Inter", sans-serif;
   transition: background-color 0.3s ease, color 0.3s ease;
+  @apply bg-[#f1f1f2] dark:bg-[#0d0c0c];
 }
 
 button {

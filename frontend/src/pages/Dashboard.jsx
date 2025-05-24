@@ -47,6 +47,12 @@ const Dashboard = () => {
     }
   };
 
+  const handleDeleteHabit = (habitId) => {
+    setHabits((prev) => prev.filter((habit) => habit.id !== habitId));
+    setToastMessage("Habit deleted successfully!");
+    setShowToast(true);
+  };
+
   const handleAddHabitClick = () => {
     if (user) {
       setIsHabitModalOpen(true);
@@ -112,12 +118,12 @@ const Dashboard = () => {
       );
     }
 
-    // Show habits list (which handles empty state itself)
     return (
       <HabitsList
         habits={habits}
         onUpdateHabit={handleUpdateHabit}
         onReorderHabits={handleReorderHabits}
+        onDeleteHabit={handleDeleteHabit}
       />
     );
   };

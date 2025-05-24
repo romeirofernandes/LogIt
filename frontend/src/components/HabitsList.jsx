@@ -1,21 +1,19 @@
-import React from 'react';
-import { motion, Reorder } from 'framer-motion';
-import HabitCard from './HabitCard';
-import { habitService } from '../services/habitService';
+import React from "react";
+import { motion, Reorder } from "framer-motion";
+import HabitCard from "./HabitCard";
+import { habitService } from "../services/habitService";
 
-const HabitsList = ({ habits, onUpdateHabit, onReorderHabits }) => {
+const HabitsList = ({ habits, onUpdateHabit, onReorderHabits, onDeleteHabit }) => {
   const handleReorder = async (newOrder) => {
-    // Update local state immediately for smooth UX
     onReorderHabits(newOrder);
-    
-    // Update order in Firestore
+
     try {
-      const updatePromises = newOrder.map((habit, index) => 
+      const updatePromises = newOrder.map((habit, index) =>
         habitService.updateHabitOrder(habit.id, index)
       );
       await Promise.all(updatePromises);
     } catch (error) {
-      console.error('Error reordering habits:', error);
+      console.error("Error reordering habits:", error);
     }
   };
 
@@ -34,25 +32,31 @@ const HabitsList = ({ habits, onUpdateHabit, onReorderHabits }) => {
   }
 
   return (
-    <Reorder.Group 
-      axis="y" 
-      values={habits} 
+    <Reorder.Group
+      axis="y"
+      values={habits}
       onReorder={handleReorder}
-      className="space-y-4"
+      className="space-y-6"
     >
       {habits.map((habit, index) => (
-        <Reorder.Item 
-          key={habit.id} 
+        <Reorder.Item
+          key={habit.id}
           value={habit}
-          drag="y"
-          dragConstraints={{ top: 0, bottom: 0 }}
-          dragElastic={0.1}
+          dragListener={true}
+          dragControls={undefined}
+          style={{
+            position: "relative",
+            listStyle: "none",
+          }}
         >
-          <HabitCard 
-            habit={habit} 
-            onUpdate={onUpdateHabit}
-            index={index}
-          />
+          <div className="cursor-grab active:cursor-grabbing">
+            <HabitCard
+              habit={habit}
+              onUpdate={onUpdateHabit}
+              onDelete={onDeleteHabit}
+              index={index}
+            />
+          </div>
         </Reorder.Item>
       ))}
     </Reorder.Group>

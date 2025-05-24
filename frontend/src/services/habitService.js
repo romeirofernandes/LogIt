@@ -4,6 +4,7 @@ import {
   getDocs,
   doc,
   updateDoc,
+  deleteDoc, // Add this import
   query,
   where,
   orderBy,
@@ -45,7 +46,7 @@ export const habitService = {
         id: doc.id,
         ...doc.data(),
       }));
-      
+
       // Sort on client side for now
       return habits.sort((a, b) => (a.order || 0) - (b.order || 0));
     } catch (error) {
@@ -76,6 +77,16 @@ export const habitService = {
       await updateDoc(habitRef, { order: newOrder });
     } catch (error) {
       console.error("Error updating habit order:", error);
+      throw error;
+    }
+  },
+
+  async deleteHabit(habitId) {
+    try {
+      const habitRef = doc(db, "habits", habitId);
+      await deleteDoc(habitRef);
+    } catch (error) {
+      console.error("Error deleting habit:", error);
       throw error;
     }
   },
