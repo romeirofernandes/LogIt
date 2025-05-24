@@ -2,24 +2,32 @@
 @import "@fontsource/dm-sans";
 @import "@fontsource/inter";
 
+@variant dark (.dark &);
+
 @theme {
-  --color-primary: #1995AD;
-  --color-secondary: #A1D6E2;
+  --color-primary: #1995ad;
+  --color-secondary: #a1d6e2;
   --color-background-light: #f1f1f2;
-  --color-background-dark: #101808;
-  --color-text-light: #101808;
+  --color-background-dark: #0d0c0c;
+  --color-text-light: #0d0c0c;
   --color-text-dark: #f1f1f2;
-  
+
   --font-family-dm-sans: "DM Sans", sans-serif;
   --font-family-inter: "Inter", sans-serif;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: "DM Sans", sans-serif;
 }
 
 body {
   font-family: "Inter", sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 button {
