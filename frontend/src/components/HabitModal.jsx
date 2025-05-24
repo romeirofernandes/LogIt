@@ -64,7 +64,7 @@ const HabitModal = ({ isOpen, onClose, onSubmit }) => {
         >
           <div>
             <label className="block text-sm font-medium mb-2">
-              Habit Name *
+              Habit Name
             </label>
             <motion.input
               type="text"
@@ -102,7 +102,7 @@ const HabitModal = ({ isOpen, onClose, onSubmit }) => {
             <motion.button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 border border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors duration-200"
+              className="flex-1 px-4 py-2 border border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 rounded-lg hover:scale-95 transition-all duration-200"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -110,7 +110,7 @@ const HabitModal = ({ isOpen, onClose, onSubmit }) => {
             </motion.button>
             <motion.button
               type="submit"
-              className="flex-1 px-4 py-2 bg-[#1995ad] text-white rounded-lg hover:bg-[#a1d6e2] transition-colors duration-200"
+              className="flex-1 px-4 py-2 bg-[#1995ad] text-white rounded-lg hover:scale-95 transition-all duration-200"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               layoutId="add-habit-button"
