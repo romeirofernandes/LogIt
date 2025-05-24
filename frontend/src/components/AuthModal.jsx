@@ -20,14 +20,14 @@ const AuthModal = ({ isOpen, onClose, onSuccess }) => {
 
   return (
     <motion.div
-      className="fixed inset-0 flex items-center justify-center z-50"
+      className="fixed inset-0 flex items-center justify-center z-50 p-4"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
     >
       <motion.div
-        className="bg-[#f1f1f2] dark:bg-[#0d0c0c] text-[#0d0c0c] dark:text-[#f1f1f2] rounded-lg p-6 w-full max-w-md mx-4 relative shadow-2xl"
+        className="bg-[#f1f1f2] dark:bg-[#0d0c0c] text-[#0d0c0c] dark:text-[#f1f1f2] rounded-lg p-4 sm:p-6 w-full max-w-sm sm:max-w-md relative shadow-2xl"
         layoutId="modal-container"
         initial={{ scale: 0.8, y: 50 }}
         animate={{ scale: 1, y: 0 }}
@@ -36,11 +36,11 @@ const AuthModal = ({ isOpen, onClose, onSuccess }) => {
       >
         <motion.button
           onClick={onClose}
-          className="absolute top-4 right-4 text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+          className="absolute top-3 right-3 sm:top-4 sm:right-4 text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200 p-1"
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
         >
-          <X size={24} />
+          <X size={20} className="sm:w-6 sm:h-6" />
         </motion.button>
 
         <motion.div
@@ -49,19 +49,26 @@ const AuthModal = ({ isOpen, onClose, onSuccess }) => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, duration: 0.3 }}
         >
-          <h2 className="text-2xl font-bold mb-2">Welcome to LogIt</h2>
-          <p className="text-zinc-600 dark:text-zinc-400 mb-8">
+          <h2 className="text-xl sm:text-2xl font-bold mb-2">
+            Welcome to LogIt
+          </h2>
+          <p className="text-zinc-600 dark:text-zinc-400 mb-6 sm:mb-8 text-sm sm:text-base">
             Sign in to start tracking your habits
           </p>
 
           <motion.button
             onClick={handleGoogleSignIn}
-            className="w-full bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 text-[#0d0c0c] dark:text-[#f1f1f2] px-4 py-3 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors duration-200 flex items-center justify-center gap-3"
-            whileHover={{ scale: 0.95 }}
-            whileTap={{ scale: 0.98 }}
+            className="w-full bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 text-[#0d0c0c] dark:text-[#f1f1f2] px-4 py-3 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors duration-200 flex items-center justify-center gap-3 text-sm sm:text-base"
+            whileHover={{ scale: 0.98 }}
+            whileTap={{ scale: 0.96 }}
             layoutId="google-signin-button"
           >
-            <svg width="20" height="20" viewBox="0 0 24 24">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              className="sm:w-5 sm:h-5"
+            >
               <path
                 fill="#4285F4"
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"

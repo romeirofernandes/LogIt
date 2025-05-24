@@ -138,16 +138,16 @@ const Dashboard = () => {
         }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
       >
-        <div className="max-w-3xl mx-auto flex flex-col min-h-screen">
+        <div className="max-w-3xl mx-auto flex flex-col min-h-screen px-4 sm:px-6">
           <Navbar />
           <div>
             <Persistence />
           </div>
 
-          <div className="flex justify-end mb-6">
+          <div className="flex justify-end mb-4 sm:mb-6">
             <motion.button
               onClick={handleAddHabitClick}
-              className="px-4 py-2 bg-[#1995ad] text-white rounded-full transition-all duration-200 font-medium"
+              className="px-4 py-2 sm:px-6 sm:py-3 bg-[#1995ad] text-white rounded-full transition-all duration-200 font-medium text-sm sm:text-base"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               animate={{

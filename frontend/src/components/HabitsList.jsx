@@ -3,7 +3,12 @@ import { motion, Reorder } from "framer-motion";
 import HabitCard from "./HabitCard";
 import { habitService } from "../services/habitService";
 
-const HabitsList = ({ habits, onUpdateHabit, onReorderHabits, onDeleteHabit }) => {
+const HabitsList = ({
+  habits,
+  onUpdateHabit,
+  onReorderHabits,
+  onDeleteHabit,
+}) => {
   const handleReorder = async (newOrder) => {
     onReorderHabits(newOrder);
 
@@ -22,9 +27,9 @@ const HabitsList = ({ habits, onUpdateHabit, onReorderHabits, onDeleteHabit }) =
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center py-12"
+        className="text-center py-8 sm:py-12 px-4"
       >
-        <p className="text-zinc-500 dark:text-zinc-400 text-lg">
+        <p className="text-zinc-500 dark:text-zinc-400 text-base sm:text-lg">
           No habits yet. Create your first habit to get started!
         </p>
       </motion.div>
@@ -36,7 +41,7 @@ const HabitsList = ({ habits, onUpdateHabit, onReorderHabits, onDeleteHabit }) =
       axis="y"
       values={habits}
       onReorder={handleReorder}
-      className="space-y-6"
+      className="space-y-4 sm:space-y-6"
     >
       {habits.map((habit, index) => (
         <Reorder.Item
@@ -49,7 +54,7 @@ const HabitsList = ({ habits, onUpdateHabit, onReorderHabits, onDeleteHabit }) =
             listStyle: "none",
           }}
         >
-          <div className="cursor-grab active:cursor-grabbing">
+          <div className="cursor-grab active:cursor-grabbing touch-manipulation">
             <HabitCard
               habit={habit}
               onUpdate={onUpdateHabit}
