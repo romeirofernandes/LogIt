@@ -41,7 +41,7 @@ const HabitComparison = ({ habits }) => {
         longestStreak,
         completionRate: Math.round(completionRate),
         isActiveToday,
-        color: `hsl(${(index * 137.5) % 360}, 70%, 50%)`, // Generate unique colors
+        color: `hsl(${(index * 137.5) % 360}, 50%, 60%)`, 
       };
     });
 

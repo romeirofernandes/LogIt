@@ -65,8 +65,6 @@ const CompletionRate = ({ habits }) => {
     }
   };
 
-  const maxPercentage = Math.max(...weeklyData.map((w) => w.percentage), 1);
-
   return (
     <div className="bg-white dark:bg-zinc-800 rounded-lg p-6 shadow-lg h-full">
       <div className="flex items-center justify-between mb-6">
@@ -136,7 +134,7 @@ const CompletionRate = ({ habits }) => {
                   }`}
                   initial={{ width: 0 }}
                   animate={{
-                    width: `${(week.percentage / maxPercentage) * 100}%`,
+                    width: `${week.percentage}%`, // Show actual percentage, not relative to max
                   }}
                   transition={{
                     delay: index * 0.1 + 0.3,

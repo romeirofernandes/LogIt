@@ -47,7 +47,7 @@ const StreakChart = ({ habits }) => {
         longestStreak,
         totalCompletions,
         streakHistory,
-        color: `hsl(${(index * 137.5) % 360}, 70%, 50%)`,
+        color: `hsl(${(index * 137.5) % 360}, 50%, 60%)`,
         id: habit.id,
       };
     });
