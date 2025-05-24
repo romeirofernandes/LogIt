@@ -1,11 +1,17 @@
 import React from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Dashboard from "./pages/Dashboard";
+import Stats from "./pages/Stats";
 
 const App = () => {
   return (
     <>
-      <div className="flex flex-col items-center justify-center tracking- min-h-screen max-w-4xl mx-auto bg-neutral-100">
-        <h1 className="text-4xl font-bold">Hello World</h1>
-      </div>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/stats" element={<Stats />} />
+        </Routes>
+      </BrowserRouter>
     </>
   );
 };
