@@ -1,233 +1,309 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Calendar, Clock, TrendingUp } from "lucide-react";
+import { TrendingUp, Calendar } from "lucide-react";
 import { dateUtils } from "../../utils/dateUtils";
 
 const WeeklyHeatmap = ({ habits }) => {
-  const [heatmapData, setHeatmapData] = useState([]);
-  const [hoveredCell, setHoveredCell] = useState(null);
-  const [stats, setStats] = useState({});
+  const [hoveredPoint, setHoveredPoint] = useState(null);
 
-  useEffect(() => {
-    generateHeatmapData();
-  }, [habits]);
+  if (!habits?.length) {
+    return (
+      <div className="bg-white dark:bg-zinc-800 rounded-lg p-4 sm:p-6 shadow-lg h-full flex items-center justify-center mt-6">
+        <p className="text-zinc-500 dark:text-zinc-400">No habits to display</p>
+      </div>
+    );
+  }
 
-  const generateHeatmapData = () => {
-    if (!habits.length) return;
-
-    const weeks = [];
+  const generateTrendData = () => {
+    const data = [];
     const today = new Date();
-    const totalWeeks = 42;
+    const daysToShow = 30;
 
-    // Calculate stats
-    let totalCompletions = 0;
-    let bestDay = { count: 0, date: null };
-    let streakDays = 0;
+    for (let i = daysToShow - 1; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(today.getDate() - i);
+      const dateString = dateUtils.getDateStringIST(date);
 
-    for (let weekIndex = totalWeeks - 1; weekIndex >= 0; weekIndex--) {
-      const weekStart = new Date(today);
-      weekStart.setDate(today.getDate() - weekIndex * 7 - today.getDay());
+      const completedHabits = habits.filter((habit) =>
+        habit.completions?.includes(dateString)
+      ).length;
 
-      const weekData = [];
+      const completionPercentage = (completedHabits / habits.length) * 100;
 
-      for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
-        const currentDate = new Date(weekStart);
-        currentDate.setDate(weekStart.getDate() + dayIndex);
-        const dateStr = dateUtils.getDateStringIST(currentDate);
-
-        // Count completions for this day
-        const completions = habits.reduce((count, habit) => {
-          return count + (habit.completions?.includes(dateStr) ? 1 : 0);
-        }, 0);
-
-        const completionRate =
-          habits.length > 0 ? (completions / habits.length) * 100 : 0;
-
-        totalCompletions += completions;
-
-        if (completions > bestDay.count) {
-          bestDay = { count: completions, date: dateStr };
-        }
-
-        if (completions > 0) {
-          streakDays++;
-        }
-
-        weekData.push({
-          date: dateStr,
-          completions,
-          completionRate,
-          dayOfWeek: dayIndex,
-          weekIndex: totalWeeks - 1 - weekIndex,
-          isToday: dateStr === dateUtils.getTodayIST(),
-          isFuture: currentDate > today,
-        });
-      }
-
-      weeks.push(weekData);
+      data.push({
+        date: dateString,
+        completedHabits,
+        totalHabits: habits.length,
+        percentage: completionPercentage,
+        isToday: dateString === dateUtils.getTodayIST(),
+      });
     }
 
-    setHeatmapData(weeks);
-
-    const avgCompletions = totalCompletions / (totalWeeks * 7);
-    const weeklyAvg = totalCompletions / totalWeeks;
-
-    setStats({
-      totalCompletions,
-      avgCompletions: Math.round(avgCompletions * 10) / 10,
-      weeklyAvg: Math.round(weeklyAvg * 10) / 10,
-      bestDay,
-      activeDays: heatmapData.flat().filter((day) => day.completions > 0)
-        .length,
-    });
+    return data;
   };
 
-  const getIntensityColor = (completionRate) => {
-    if (completionRate === 0) return "bg-zinc-100 dark:bg-zinc-800";
-    if (completionRate <= 25) return "bg-green-200 dark:bg-green-900/40";
-    if (completionRate <= 50) return "bg-green-300 dark:bg-green-700/60";
-    if (completionRate <= 75) return "bg-green-400 dark:bg-green-600/80";
-    return "bg-green-500 dark:bg-green-500";
+  const data = generateTrendData();
+
+  // Responsive chart dimensions - adjusted for better visibility
+  const chartPadding = 60;
+  const chartWidth = 800;
+  const chartHeight = 150;
+  const topPadding = 20;
+  const innerWidth = chartWidth - chartPadding * 2;
+
+  // Create simple, clean paths
+  const createPath = () => {
+    if (data.length === 0) return "";
+
+    return data
+      .map((point, index) => {
+        const x = (index / (data.length - 1)) * innerWidth;
+        const y =
+          topPadding +
+          (chartHeight - topPadding) -
+          (point.percentage / 100) * (chartHeight - topPadding);
+        return `${index === 0 ? "M" : "L"} ${x} ${y}`;
+      })
+      .join(" ");
   };
 
-  const getBorderColor = (day) => {
-    if (day.isToday) return "ring-2 ring-[#1995ad] ring-offset-1";
-    if (day.isFuture)
-      return "border border-zinc-300 dark:border-zinc-600 opacity-30";
-    return "";
+  const createAreaPath = () => {
+    if (data.length === 0) return "";
+
+    const linePath = createPath();
+    return `${linePath} L ${innerWidth} ${chartHeight} L 0 ${chartHeight} Z`;
   };
-
-  const dayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const monthLabels = [];
-
-  // Generate month labels
-  for (let i = 11; i >= 0; i--) {
-    const date = new Date();
-    date.setDate(date.getDate() - i * 7);
-    const month = date.toLocaleDateString("en-US", { month: "short" });
-    monthLabels.push(month);
-  }
 
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString("en-US", {
-      weekday: "long",
       month: "short",
       day: "numeric",
     });
   };
 
-  return (
-    <div className="bg-white dark:bg-zinc-800 rounded-lg p-6 shadow-lg">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
-        <div className="flex items-center gap-2">
-          <Calendar className="w-5 h-5 text-[#1995ad]" />
-          <div>
-            <h3 className="text-lg font-semibold text-[#0d0c0c] dark:text-[#f1f1f2]">
-              Activity Heatmap
-            </h3>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              42 weeks of habit completion patterns
-            </p>
-          </div>
-        </div>
+  // Calculate stats
+  const avgCompletion =
+    data.length > 0
+      ? Math.round(
+          data.reduce((sum, day) => sum + day.percentage, 0) / data.length
+        )
+      : 0;
 
-        {/* Quick Stats */}
-        <div className="flex gap-4 text-sm">
-          <div className="text-center">
-            <p className="font-bold text-[#0d0c0c] dark:text-[#f1f1f2]">
-              {stats.totalCompletions}
-            </p>
-            <p className="text-zinc-600 dark:text-zinc-400">Total</p>
-          </div>
-          <div className="text-center">
-            <p className="font-bold text-[#0d0c0c] dark:text-[#f1f1f2]">
-              {stats.weeklyAvg}
-            </p>
-            <p className="text-zinc-600 dark:text-zinc-400">Weekly Avg</p>
-          </div>
+  const bestDay = data.reduce(
+    (best, day) => (day.percentage > best.percentage ? day : best),
+    { percentage: 0 }
+  );
+
+  const recentAvg =
+    data.length > 7
+      ? data.slice(-7).reduce((sum, day) => sum + day.percentage, 0) / 7
+      : 0;
+
+  const earlierAvg =
+    data.length > 14
+      ? data.slice(0, 7).reduce((sum, day) => sum + day.percentage, 0) / 7
+      : 0;
+
+  const trend = recentAvg - earlierAvg;
+
+  return (
+    <div className="bg-white dark:bg-zinc-800 rounded-lg p-4 sm:p-6 shadow-lg mt-6">
+      {/* Header */}
+      <div className="flex items-center gap-2 mb-4 sm:mb-6">
+        <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-[#1995ad]" />
+        <div>
+          <h3 className="text-base sm:text-lg font-semibold text-[#0d0c0c] dark:text-[#f1f1f2]">
+            30-Day Completion Trend
+          </h3>
+          <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
+            Daily habit completion percentage
+          </p>
         </div>
       </div>
 
-      {/* Heatmap Grid */}
-      <div className="relative overflow-x-auto">
-        <div className="flex gap-1 mb-2 min-w-max">
-          {/* Day labels */}
-          <div className="flex flex-col gap-1 w-8">
-            <div className="h-4"></div> {/* Space for month labels */}
-            {dayLabels.map((day, index) => (
-              <div
-                key={day}
-                className="h-3 text-xs text-zinc-600 dark:text-zinc-400 flex items-center"
+      {/* Chart Container - Full Width */}
+      <div className="relative mb-6 sm:mb-8">
+        <svg
+          width="100%"
+          height={chartHeight + 50}
+          viewBox={`0 0 ${chartWidth} ${chartHeight + 50}`}
+          className="w-full"
+          preserveAspectRatio="none"
+        >
+          {/* Grid lines */}
+          {[0, 25, 50, 75, 100].map((percentage) => (
+            <g key={percentage}>
+              <line
+                x1={chartPadding}
+                y1={
+                  topPadding +
+                  (chartHeight - topPadding) -
+                  (percentage / 100) * (chartHeight - topPadding)
+                }
+                x2={chartWidth - chartPadding}
+                y2={
+                  topPadding +
+                  (chartHeight - topPadding) -
+                  (percentage / 100) * (chartHeight - topPadding)
+                }
+                stroke="currentColor"
+                strokeWidth="1"
+                className="text-zinc-200 dark:text-zinc-700"
+                opacity="0.5"
+              />
+              <text
+                x={chartPadding - 10}
+                y={
+                  topPadding +
+                  (chartHeight - topPadding) -
+                  (percentage / 100) * (chartHeight - topPadding) +
+                  4
+                }
+                fill="currentColor"
+                className="text-zinc-500 dark:text-zinc-400"
+                textAnchor="end"
+                fontSize="10"
               >
-                {index % 2 === 1 ? day : ""}{" "}
-                {/* Show every other day to avoid crowding */}
-              </div>
-            ))}
-          </div>
+                {percentage}%
+              </text>
+            </g>
+          ))}
 
-          {/* Heatmap cells */}
-          <div className="flex-1">
-            {/* Month labels */}
-            <div className="flex gap-1 mb-1 h-4">
-              {monthLabels.map((month, index) => (
-                <div
-                  key={index}
-                  className="text-xs text-zinc-600 dark:text-zinc-400 flex-1 text-center"
-                >
-                  {index % 3 === 0 ? month : ""} {/* Show every 3rd month */}
-                </div>
-              ))}
-            </div>
+          {/* Chart content */}
+          <g transform={`translate(${chartPadding}, 0)`}>
+            {/* Area fill */}
+            <motion.path
+              d={createAreaPath()}
+              fill="url(#gradient)"
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={{ pathLength: 1, opacity: 0.3 }}
+              transition={{ duration: 1.5, ease: "easeOut" }}
+            />
 
-            {/* Grid */}
-            <div className="flex gap-1">
-              {heatmapData.map((week, weekIndex) => (
-                <div key={weekIndex} className="flex flex-col gap-1">
-                  {week.map((day, dayIndex) => (
-                    <motion.div
-                      key={`${weekIndex}-${dayIndex}`}
-                      className={`w-3 h-3 rounded-sm cursor-pointer transition-all duration-200 ${getIntensityColor(day.completionRate)} ${getBorderColor(day)}`}
+            {/* Main line */}
+            <motion.path
+              d={createPath()}
+              stroke="#1995ad"
+              strokeWidth="3"
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              initial={{ pathLength: 0 }}
+              animate={{ pathLength: 1 }}
+              transition={{ duration: 1.5, ease: "easeOut" }}
+            />
+
+            {/* Data points */}
+            {data.map((point, index) => {
+              const x = (index / (data.length - 1)) * innerWidth;
+              const y =
+                topPadding +
+                (chartHeight - topPadding) -
+                (point.percentage / 100) * (chartHeight - topPadding);
+
+              return (
+                <motion.g key={index}>
+                  <motion.circle
+                    cx={x}
+                    cy={y}
+                    r={hoveredPoint === index ? 5 : 3}
+                    fill="#1995ad"
+                    stroke="white"
+                    strokeWidth="2"
+                    className="cursor-pointer"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: index * 0.02 + 0.8 }}
+                    onMouseEnter={() => setHoveredPoint(index)}
+                    onMouseLeave={() => setHoveredPoint(null)}
+                  />
+
+                  {/* Today indicator */}
+                  {point.isToday && (
+                    <motion.circle
+                      cx={x}
+                      cy={y}
+                      r="8"
+                      fill="none"
+                      stroke="#1995ad"
+                      strokeWidth="2"
+                      strokeDasharray="4 4"
                       initial={{ scale: 0, opacity: 0 }}
-                      animate={{ scale: 1, opacity: day.isFuture ? 0.3 : 1 }}
-                      transition={{
-                        delay: (weekIndex * 7 + dayIndex) * 0.01,
-                        duration: 0.3,
-                      }}
-                      whileHover={{
-                        scale: 1.3,
-                        zIndex: 10,
-                        transition: { duration: 0.1 },
-                      }}
-                      onMouseEnter={() => setHoveredCell(day)}
-                      onMouseLeave={() => setHoveredCell(null)}
+                      animate={{ scale: 1, opacity: 0.7 }}
+                      transition={{ delay: 2 }}
                     />
-                  ))}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+                  )}
+                </motion.g>
+              );
+            })}
+          </g>
+
+          {/* X-axis labels */}
+          <g transform={`translate(${chartPadding}, ${chartHeight + 15})`}>
+            <text
+              x="0"
+              y="12"
+              fill="currentColor"
+              className="text-zinc-500 dark:text-zinc-400 text-xs sm:text-sm"
+              textAnchor="start"
+              fontSize="9"
+            >
+              {formatDate(data[0]?.date)}
+            </text>
+            <text
+              x={innerWidth / 2}
+              y="12"
+              fill="currentColor"
+              className="text-zinc-500 dark:text-zinc-400 text-xs sm:text-sm"
+              textAnchor="middle"
+              fontSize="9"
+            >
+              15 days ago
+            </text>
+            <text
+              x={innerWidth}
+              y="12"
+              fill="currentColor"
+              className="text-zinc-500 dark:text-zinc-400 text-xs sm:text-sm"
+              textAnchor="end"
+              fontSize="9"
+            >
+              Today
+            </text>
+          </g>
+
+          {/* Gradient */}
+          <defs>
+            <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#1995ad" stopOpacity="0.8" />
+              <stop offset="100%" stopColor="#1995ad" stopOpacity="0.1" />
+            </linearGradient>
+          </defs>
+        </svg>
 
         {/* Tooltip */}
-        {hoveredCell && (
+        {hoveredPoint !== null && (
           <motion.div
-            className="absolute bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 px-3 py-2 rounded-lg text-sm pointer-events-none z-20 shadow-lg"
+            className="absolute bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 px-2 py-1 sm:px-3 sm:py-2 rounded-lg text-xs sm:text-sm pointer-events-none z-20 shadow-lg whitespace-nowrap"
             style={{
-              left: "50%",
-              top: "50%",
+              left: `${7.5 + (hoveredPoint / (data.length - 1)) * 85}%`,
+              top: `${topPadding + ((100 - data[hoveredPoint].percentage) / 100) * (chartHeight - topPadding)}px`,
               transform: "translate(-50%, -120%)",
             }}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
           >
             <div className="text-center">
-              <div className="font-medium">{formatDate(hoveredCell.date)}</div>
-              <div className="text-xs mt-1">
-                {hoveredCell.completions} of {habits.length} habits completed
+              <div className="font-medium text-xs sm:text-sm">
+                {formatDate(data[hoveredPoint].date)}
               </div>
-              <div className="text-xs">
-                {Math.round(hoveredCell.completionRate)}% completion rate
+              <div className="text-xs opacity-90">
+                {data[hoveredPoint].completedHabits}/
+                {data[hoveredPoint].totalHabits} habits
+              </div>
+              <div className="text-xs font-bold">
+                {Math.round(data[hoveredPoint].percentage)}% completed
               </div>
             </div>
             <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-zinc-900 dark:border-t-zinc-100" />
@@ -235,91 +311,55 @@ const WeeklyHeatmap = ({ habits }) => {
         )}
       </div>
 
-      {/* Legend and Stats */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-6 gap-4">
-        {/* Intensity Legend */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-zinc-600 dark:text-zinc-400">Less</span>
-          <div className="flex gap-1">
-            {[0, 25, 50, 75, 100].map((intensity) => (
-              <div
-                key={intensity}
-                className={`w-3 h-3 rounded-sm ${getIntensityColor(intensity)}`}
-              />
-            ))}
-          </div>
-          <span className="text-xs text-zinc-600 dark:text-zinc-400">More</span>
-        </div>
-
-        {/* Best Day */}
-        {stats.bestDay?.date && (
-          <motion.div
-            className="flex items-center gap-2 px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-sm"
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 1 }}
-          >
-            <TrendingUp className="w-4 h-4" />
-            <span className="font-medium">
-              Best day: {stats.bestDay.count} completions
-            </span>
-          </motion.div>
-        )}
-      </div>
-
-      {/* Additional Insights */}
+      {/* Summary Stats */}
       <motion.div
-        className="mt-4 p-4 bg-zinc-50 dark:bg-zinc-700/50 rounded-lg"
+        className="grid grid-cols-3 gap-2 sm:gap-4"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.8 }}
+      >
+        <div className="text-center p-2 sm:p-3 bg-zinc-50 dark:bg-zinc-700/50 rounded-lg">
+          <Calendar className="w-3 h-3 sm:w-4 sm:h-4 text-blue-500 mx-auto mb-1" />
+          <p className="text-sm sm:text-lg font-bold text-[#0d0c0c] dark:text-[#f1f1f2]">
+            {avgCompletion}%
+          </p>
+          <p className="text-xs text-zinc-600 dark:text-zinc-400">Average</p>
+        </div>
+
+        <div className="text-center p-2 sm:p-3 bg-zinc-50 dark:bg-zinc-700/50 rounded-lg">
+          <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 mx-auto mb-1" />
+          <p className="text-sm sm:text-lg font-bold text-[#0d0c0c] dark:text-[#f1f1f2]">
+            {Math.round(bestDay.percentage)}%
+          </p>
+          <p className="text-xs text-zinc-600 dark:text-zinc-400">Best Day</p>
+        </div>
+
+        <div className="text-center p-2 sm:p-3 bg-zinc-50 dark:bg-zinc-700/50 rounded-lg">
+          <div
+            className={`w-3 h-3 sm:w-4 sm:h-4 mx-auto mb-1 ${
+              trend >= 0 ? "text-green-500" : "text-red-500"
+            }`}
+          >
+            {trend >= 0 ? "📈" : "📉"}
+          </div>
+          <p className="text-sm sm:text-lg font-bold text-[#0d0c0c] dark:text-[#f1f1f2]">
+            {trend >= 0 ? "+" : ""}
+            {Math.round(trend)}%
+          </p>
+          <p className="text-xs text-zinc-600 dark:text-zinc-400">Trend</p>
+        </div>
+      </motion.div>
+
+      {/* Explanation */}
+      <motion.div
+        className="mt-3 sm:mt-4 text-center"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
         transition={{ delay: 1.2 }}
       >
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
-          <div>
-            <div className="flex items-center justify-center gap-1 mb-1">
-              <Clock className="w-4 h-4 text-blue-500" />
-              <span className="text-xs text-zinc-600 dark:text-zinc-400">
-                Daily Avg
-              </span>
-            </div>
-            <p className="font-bold text-[#0d0c0c] dark:text-[#f1f1f2]">
-              {stats.avgCompletions}
-            </p>
-          </div>
-          <div>
-            <div className="flex items-center justify-center gap-1 mb-1">
-              <Calendar className="w-4 h-4 text-green-500" />
-              <span className="text-xs text-zinc-600 dark:text-zinc-400">
-                Active Days
-              </span>
-            </div>
-            <p className="font-bold text-[#0d0c0c] dark:text-[#f1f1f2]">
-              {stats.activeDays || 0}
-            </p>
-          </div>
-          <div>
-            <div className="flex items-center justify-center gap-1 mb-1">
-              <TrendingUp className="w-4 h-4 text-purple-500" />
-              <span className="text-xs text-zinc-600 dark:text-zinc-400">
-                Best Day
-              </span>
-            </div>
-            <p className="font-bold text-[#0d0c0c] dark:text-[#f1f1f2]">
-              {stats.bestDay?.count || 0}
-            </p>
-          </div>
-          <div>
-            <div className="flex items-center justify-center gap-1 mb-1">
-              <span className="text-xs text-zinc-600 dark:text-zinc-400">
-                Consistency
-              </span>
-            </div>
-            <p className="font-bold text-[#0d0c0c] dark:text-[#f1f1f2]">
-              {stats.activeDays ? Math.round((stats.activeDays / 84) * 100) : 0}
-              %
-            </p>
-          </div>
-        </div>
+        <p className="text-xs text-zinc-500 dark:text-zinc-400">
+          Shows daily completion percentage over the last 30 days
+        </p>
       </motion.div>
     </div>
   );
