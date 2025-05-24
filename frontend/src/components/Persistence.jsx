@@ -2,7 +2,7 @@ import React from "react";
 
 const Persistence = () => {
   return (
-    <div className="max-w-xl mx-auto my-8 bg-neutral-50 rounded-lg shadow-lg overflow-hidden">
+    <div className="max-w-3xl mx-auto mb-8 mt-4 bg-neutral-50 rounded-lg shadow-lg overflow-hidden">
       <div className="px-6 py-4">
         <div className="flex items-baseline mb-2">
           <h1 className="text-3xl font-bold text-neutral-800 mr-2">
