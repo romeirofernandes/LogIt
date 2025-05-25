@@ -11,8 +11,8 @@ const Footer = () => {
     >
       <div className="max-w-3xl mx-auto absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-zinc-300 dark:via-zinc-600 to-transparent" />
 
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+      <div className="max-w-3xl mx-auto px-6 sm:px-6lg:px-8">
+        <div className="flex flex-row justify-between items-center gap-4">
           <motion.div
             className="text-sm text-zinc-600 dark:text-zinc-400"
             initial={{ opacity: 0, x: -20 }}

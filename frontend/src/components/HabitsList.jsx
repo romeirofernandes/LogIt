@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { motion, Reorder } from "framer-motion";
 import HabitCard from "./HabitCard";
 import { habitService } from "../services/habitService";
@@ -9,6 +9,19 @@ const HabitsList = ({
   onReorderHabits,
   onDeleteHabit,
 }) => {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkIfMobile();
+    window.addEventListener("resize", checkIfMobile);
+
+    return () => window.removeEventListener("resize", checkIfMobile);
+  }, []);
+
   const handleReorder = async (newOrder) => {
     onReorderHabits(newOrder);
 
@@ -36,6 +49,28 @@ const HabitsList = ({
     );
   }
 
+  if (isMobile) {
+    return (
+      <div className="space-y-4">
+        {habits.map((habit, index) => (
+          <motion.div
+            key={habit.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
+          >
+            <HabitCard
+              habit={habit}
+              onUpdate={onUpdateHabit}
+              onDelete={onDeleteHabit}
+              index={index}
+            />
+          </motion.div>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <Reorder.Group
       axis="y"
@@ -54,7 +89,7 @@ const HabitsList = ({
             listStyle: "none",
           }}
         >
-          <div className="cursor-grab active:cursor-grabbing touch-manipulation">
+          <div className="cursor-grab active:cursor-grabbing">
             <HabitCard
               habit={habit}
               onUpdate={onUpdateHabit}
