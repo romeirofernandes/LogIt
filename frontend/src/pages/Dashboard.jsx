@@ -130,7 +130,6 @@ const Dashboard = () => {
 
   return (
     <div className="relative">
-      {/* Main Content */}
       <motion.div
         className="bg-[#f1f1f2] dark:bg-[#0d0c0c] text-[#0d0c0c] dark:text-[#f1f1f2] min-h-screen transition-colors duration-300"
         animate={{
